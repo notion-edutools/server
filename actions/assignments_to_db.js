@@ -7,7 +7,8 @@ const { Client } = require('@notionhq/client');
 const { htmlToText } = require('html-to-text');
 
 const axios = require('axios');
-const auth_header = "Bearer " + Buffer.from(process.env.NOTION_CLIENT_ID + ":" + process.env.NOTION_CLIENT_SECRET).toString('base64');
+const auth_header = "Basic " + Buffer.from(process.env.NOTION_CLIENT_ID + ":" + process.env.NOTION_CLIENT_SECRET).toString('base64');
+console.log(auth_header);
 
 // router.get("/", (req, res) => res.status(400).json({success: false, message: "You can only POST here. Please check https://c2n.srg.id.au for more info."}))
 
@@ -22,15 +23,24 @@ router.post("/", async (req, res) => {
         });
     }
 
-    const token_response = await axios.post("https://api.notion.com/v1/oauth/token", {
-        "grant_type": "authorization_code",
-        "code": req.body.notion_token,
-        "redirect_uri": process.env.NOTION_REDIRECT_URI
-    }, {
-        headers: {
-            'Authorization': auth_header
-        }
-    });
+    let token_response;
+
+    try {
+        token_response = await axios.post("https://api.notion.com/v1/oauth/token", {
+            "grant_type": "authorization_code",
+            "code": req.body.notion_token,
+            "redirect_uri": process.env.NOTION_REDIRECT_URI
+        }, {
+            headers: {
+                'Authorization': auth_header
+            }
+        });
+    } catch (e) {
+        return res.status(403).json({
+            success: false,
+            message: "Error while authenticating to Notion."
+        });
+    }
 
     if (token_response.data.error) {
         return res.status(403).json({
