@@ -39,7 +39,7 @@ router.post("/", async (req, res) => {
         });
     }
 
-    const notion = new Client({ auth: token_response.access_token });
+    const notion = new Client({ auth: token_response.data.access_token });
 
     const db_id = req.body.notionUri.split("?")[0].split("/")[4];
     if (db_id.length !== 32) {
