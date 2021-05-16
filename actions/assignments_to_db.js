@@ -9,7 +9,7 @@ const { htmlToText } = require('html-to-text');
 const axios = require('axios');
 const auth_header = "Bearer " + Buffer.from(process.env.NOTION_CLIENT_ID + ":" + process.env.NOTION_CLIENT_SECRET).toString('base64');
 
-router.get("/", (req, res) => res.status(400).json({success: false, message: "You can only POST here. Please check https://c2n.srg.id.au for more info."}))
+// router.get("/", (req, res) => res.status(400).json({success: false, message: "You can only POST here. Please check https://c2n.srg.id.au for more info."}))
 
 router.post("/", async (req, res) => {
 
