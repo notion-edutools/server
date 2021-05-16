@@ -10,6 +10,8 @@ const axios = require('axios');
 const auth_header = "Basic " + Buffer.from(process.env.NOTION_CLIENT_ID + ":" + process.env.NOTION_CLIENT_SECRET).toString('base64');
 console.log(auth_header);
 
+let grant_tokens = {}
+
 // router.get("/", (req, res) => res.status(400).json({success: false, message: "You can only POST here. Please check https://c2n.srg.id.au for more info."}))
 
 router.post("/", async (req, res) => {
@@ -23,36 +25,42 @@ router.post("/", async (req, res) => {
         });
     }
 
-    let token_response;
+    let notion;
+    
+    if (!grant_tokens[req.body.notion_token]) {
+        let token_response;
 
-    try {
-        token_response = await axios.post("https://api.notion.com/v1/oauth/token", {
-            "grant_type": "authorization_code",
-            "code": req.body.notion_token,
-            "redirect_uri": process.env.NOTION_REDIRECT_URI
-        }, {
-            headers: {
-                'Authorization': auth_header,
-                'Content-Type': 'application/json'
-            }
-        });
-    } catch (e) {
-        return res.status(403).json({
-            success: false,
-            message: "Error while authenticating to Notion.",
-            oauth_error: e.response.data || null
-        });
+        try {
+            token_response = await axios.post("https://api.notion.com/v1/oauth/token", {
+                "grant_type": "authorization_code",
+                "code": req.body.notion_token,
+                "redirect_uri": process.env.NOTION_REDIRECT_URI
+            }, {
+                headers: {
+                    'Authorization': auth_header,
+                    'Content-Type': 'application/json'
+                }
+            });
+        } catch (e) {
+            return res.status(403).json({
+                success: false,
+                message: "Error while authenticating to Notion.",
+                oauth_error: e.response.data || null
+            });
+        }
+
+        if (token_response.data.error) {
+            return res.status(403).json({
+                success: false,
+                message: "Error while authenticating to Notion.",
+                oauth_error: token.response.data.error
+            });
+        }
+
+        notion = new Client({ auth: token_response.data.access_token });   
+    } else {
+        notion = new Client({ auth: grant_tokens[req.body.notion_token] });
     }
-
-    if (token_response.data.error) {
-        return res.status(403).json({
-            success: false,
-            message: "Error while authenticating to Notion.",
-            oauth_error: token.response.data.error
-        });
-    }
-
-    const notion = new Client({ auth: token_response.data.access_token });
 
     const db_id = req.body.notionUri.split("?")[0].split("/")[4];
     if (db_id.length !== 32) {
