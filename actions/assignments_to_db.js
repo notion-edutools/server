@@ -57,6 +57,7 @@ router.post("/", async (req, res) => {
             });
         }
 
+        grant_tokens[req.body.notion_token] = token_response.data.access_token;
         notion = new Client({ auth: token_response.data.access_token });   
     } else {
         notion = new Client({ auth: grant_tokens[req.body.notion_token] });
