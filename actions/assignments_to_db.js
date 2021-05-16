@@ -38,7 +38,8 @@ router.post("/", async (req, res) => {
     } catch (e) {
         return res.status(403).json({
             success: false,
-            message: "Error while authenticating to Notion."
+            message: "Error while authenticating to Notion.",
+            oauth_error: e.response.data || null
         });
     }
 
