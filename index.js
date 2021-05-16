@@ -13,7 +13,7 @@ app.use(limiter);
 app.use(express.json());
 
 app.use(require('cors')({
-    origin: "*"
+    origin: "https://c2n.srg.id.au"
 }));
 
 app.all("/", (req, res) => res.redirect("https://c2n.srg.id.au"))
