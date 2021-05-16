@@ -32,7 +32,8 @@ router.post("/", async (req, res) => {
             "redirect_uri": process.env.NOTION_REDIRECT_URI
         }, {
             headers: {
-                'Authorization': auth_header
+                'Authorization': auth_header,
+                'Content-Type': 'application/json'
             }
         });
     } catch (e) {
