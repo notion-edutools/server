@@ -120,6 +120,14 @@ router.post("/", async (req, res) => {
                     //     checkbox: assn.has_submitted_submissions || false
                     // },
 
+                    IncludedInFinalGrade: {
+                        checkbox: !assn.omit_from_final_grade
+                    },
+
+                    Locked: {
+                        checkbox: assn.locked_for_user
+                    },
+
                     Due: {
                         date: {
                             start: assn.due_at,
