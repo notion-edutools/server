@@ -44,8 +44,8 @@ router.post("/", async (req, res) => {
         } catch (e) {
             return res.status(403).json({
                 success: false,
-                message: "Error while authenticating to Notion.",
-                oauth_error: e.response.data || null,
+                message: "Error while authenticating to Notion. Try reauthenticating - scroll up and press the button.",
+                oauth_error: e.response.data.error || null,
                 reauth: e.response.data.error === "invalid_grant"
             });
         }
@@ -53,8 +53,8 @@ router.post("/", async (req, res) => {
         if (token_response.data.error) {
             return res.status(403).json({
                 success: false,
-                message: "Error while authenticating to Notion.",
-                oauth_error: token.response.data.error,
+                message: "Error while authenticating to Notion. Try reauthenticating - scroll up and press the button.",
+                oauth_error: token_response.data.error,
                 reauth: token_response.data.error === "invalid_grant"
             });
         }
