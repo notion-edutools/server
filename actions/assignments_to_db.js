@@ -119,6 +119,20 @@ router.post("/", async (req, res) => {
         accessToken: req.body.ctoken
     });
 
+    let course;
+
+    try {
+    	course = await canvas.get("courses/" + req.body.cid);
+    } catch (e) {
+    	return res.status(400).json({
+    		success: false,
+    		message: `Error getting Canvas course ${req.body.cid}. Did you enter it correctly?`,
+    		error: e
+    	});
+    }
+
+
+
     // Get the assignments for the course
     canvas.get('courses/' + req.body.cid + "/assignments").then(async (r) => {
 
@@ -143,6 +157,16 @@ router.post("/", async (req, res) => {
                             {
                                 text: {
                                     content: assn.name
+                                }
+                            }
+                        ]
+                    },
+
+                    Course: {
+                        rich_text: [
+                            {
+                                text: {
+                                    content: course.name
                                 }
                             }
                         ]
