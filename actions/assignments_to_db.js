@@ -60,12 +60,15 @@ router.post("/", async (req, res) => {
         }
 
         grant_tokens[req.body.notion_token] = token_response.data.access_token;
-        notion = new Client({ auth: token_response.data.access_token });   
+        notion = new Client({ auth: token_response.data.access_token });  
+
     } else {
         notion = new Client({ auth: grant_tokens[req.body.notion_token] });
     }
 
-    const db_id = req.body.notionUri.split("?")[0].split("/")[4];
+    const frags = req.body.notionUri.split("?")[0].split("/");
+    const db_id = frags[frags.length - 1] == '' ? frags[frags.length - 2] : frags[frags.length - 1];
+
     if (db_id.length !== 32) {
         return res.status(400).json({
             success: false,
