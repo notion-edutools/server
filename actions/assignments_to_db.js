@@ -28,8 +28,7 @@ console.log(auth_header);
 // 4. Server recieves the auth code.
 // 5. If the auth code is in memory, we use the OAuth token that is stored.
 // 5. If the auth code is NOT in memory, we make a request to Notion's API and send the auth code, this gives us the OAuth token.
-// 6. We store this OAuth token for the period of the request and then discard it.
-// 7. We store the auth code in memory.
+// 6. We store the auth code in memory along with the associated OAuth token.
 
 let grant_tokens = {}
 
