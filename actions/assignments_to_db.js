@@ -67,12 +67,12 @@ router.post("/", async (req, res) => {
     }
 
     const frags = req.body.notionUri.split("?")[0].split("/");
-    const db_id = frags[frags.length - 1] == '' ? frags[frags.length - 2] : frags[frags.length - 1];
+    const db_id = (frags[frags.length - 1] == '') ? frags[frags.length - 2] : frags[frags.length - 1];
 
     if (db_id.length !== 32) {
         return res.status(400).json({
             success: false,
-            message: "The Notion URL was not able to be parsed. Make sure it's in the format https://www.notion.so/user/380c311b9e2d4XXXX6c0125316a255d8."
+            message: "The Notion URL was not able to be parsed. Make sure it's in the format https://www.notion.so/user/380c311b9e2d4XXXX6c0125316a255d8 or https://www.notion.so/380c311b9e2d4XXXX6c0125316a255d8."
         });
     }
 
