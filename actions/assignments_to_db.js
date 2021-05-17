@@ -44,7 +44,7 @@ router.post("/", async (req, res) => {
         return res.status(400).json({
             success: false,
             message: "One or more parameters is missing.",
-            params_given: Object.keys(req.body),
+            params_given: Object.keys(req.body).filter(X=>req.body[X]),
             params_required: ['cdom', 'cid', 'notionUri', 'ctoken', 'notion_token']
         });
     }
