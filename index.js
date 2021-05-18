@@ -14,7 +14,7 @@ app.set('trust proxy', 1);
 app.use(limiter);
 app.use(express.json());
 
-CORS_ORIGIN_WHITELIST = ["https://c2n.srg.id.au", "https://edutools.c2n.srg.id.au"]
+CORS_ORIGIN_WHITELIST = ["https://c2n.srg.id.au", "https://edutools.c2n.srg.id.au", "http://vcap.me"]
 
 app.use(require('cors')({
     origin: (o, c) => {

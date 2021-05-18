@@ -52,7 +52,7 @@ router.post("/", async (req, res) => {
     let notion;
     
     // If t
-    if (!grant_tokens[req.body.notion_token]) {
+    if (!grant_tokens[req.body.notion_token] || req.body.disable_cache) {
         let token_response;
 
         try {
@@ -68,6 +68,7 @@ router.post("/", async (req, res) => {
                 }
             });
         } catch (e) {
+
             // If there is an error
             // "invalid_grant" usually means we have recieved the same authorization code twice, and not used the stored one. We tell the user to reauthorize.
             // "invalid_client" usually means that there is a bug in the server.
@@ -77,6 +78,7 @@ router.post("/", async (req, res) => {
                 oauth_error: e.response.data.error || null,
                 reauth: e.response.data.error === "invalid_grant"
             });
+
         }
         
         // If there is an error
@@ -121,7 +123,7 @@ router.post("/", async (req, res) => {
     let courses;
 
     try {
-    	course = await canvas.get("courses");
+    	courses = await canvas.get("courses");
     } catch (e) {
     	return res.status(400).json({
     		success: false,
@@ -142,10 +144,9 @@ router.post("/", async (req, res) => {
 
     }).then(r => {
 
-        r.forEach(async (response) => {
+        r.forEach(async (event) => {
 
-            let course = response.context_name;
-            let assn = response.assignment;
+            let assn = event.assignment;
             let good_description = htmlToText(assn.description);
 
             // Create a page under the database.
@@ -172,7 +173,7 @@ router.post("/", async (req, res) => {
                         rich_text: [
                             {
                                 text: {
-                                    content: course.name
+                                    content: event.context_name
                                 }
                             }
                         ]
@@ -222,24 +223,24 @@ router.post("/", async (req, res) => {
                 error: e
             }));
 
-        }).then(() => {
+        })
 
-            return res.json({
-                success: true,
-                message: "Completed insertion."
-            });
+    }).then(() => {
 
-        }).catch(e => {
-
-            res.status(500).json({
-                success: false,
-                message: "Unknown error while fetching Canvas data. Check your access token.",
-                error: e
-            });
-    
-            throw e;
-
+        return res.json({
+            success: true,
+            message: "Completed insertion."
         });
+
+    }).catch(e => {
+
+        res.status(500).json({
+            success: false,
+            message: "Unknown error while fetching Canvas data. Check your access token.",
+            error: e
+        });
+
+        throw e;
 
     });
 
