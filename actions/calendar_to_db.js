@@ -171,9 +171,9 @@ router.post("/", async (req, res) => {
                 due_start = event.start_at;
                 due_end = event.end_at;
 
-                description = htmlToText(event.description);
+                description = htmlToText(event.description || "None");
                 course = event.context_name;
-                url = event.html_url;
+                url = event.html_url || "https://google.com";
                 locked = false;
 
                 finalGrade = false;
