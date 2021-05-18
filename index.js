@@ -6,7 +6,7 @@ const app = express();
 
 const limiter = require('express-rate-limit')({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 50 // limit each IP to 15 requests per windowMs
+    max: 50 // limit each IP to 50 requests per windowMs
 });
 
 app.set('trust proxy', 1);
@@ -14,8 +14,20 @@ app.set('trust proxy', 1);
 app.use(limiter);
 app.use(express.json());
 
+CORS_ORIGIN_WHITELIST = ["https://c2n.srg.id.au", "https://edutools.c2n.srg.id.au"]
+
 app.use(require('cors')({
-    origin: "https://c2n.srg.id.au"
+    origin: (o, c) => {
+
+        // Remove !o to disallow server-to-server requests.
+        if (CORS_ORIGIN_WHITELIST.includes(o) || !o) {
+            return c(true);
+        } else {
+            console.warn("Request was made to server from origin " + o + " which has been blocked by CORS.")
+            return c(new Error('Origin not allowed by CORS.'));
+        }
+
+    }
 }));
 
 app.all("/", (req, res) => res.redirect("https://c2n.srg.id.au"))
