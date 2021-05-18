@@ -6,7 +6,7 @@ const app = express();
 
 const limiter = require('express-rate-limit')({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 50 // limit each IP to 50 requests per windowMs
+    max: 50 // limit each IP to 50  requests per windowMs
 });
 
 app.set('trust proxy', 1);
@@ -21,10 +21,10 @@ app.use(require('cors')({
 
         // Remove !o to disallow server-to-server requests.
         if (CORS_ORIGIN_WHITELIST.includes(o) || !o) {
-            return c(true);
+            return c(null, true);
         } else {
             console.warn("Request was made to server from origin " + o + " which has been blocked by CORS.")
-            return c(new Error('Origin not allowed by CORS.'));
+            return c('Cross origin request from origin ' + o + ' is denied.', false);
         }
 
     }
