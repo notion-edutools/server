@@ -120,34 +120,79 @@ router.post("/", async (req, res) => {
         accessToken: req.body.ctoken
     });
 
-    let courses;
-
-    try {
-    	courses = await canvas.get("courses");
-    } catch (e) {
-    	return res.status(400).json({
-    		success: false,
-    		message: `Error getting Canvas courses. Is the authorization token correct?`,
-    		error: e
-    	});
-    }
-
-    courses_qs = courses.map(e => "course_" + e.id);
-
-    // Get calendar events and put then into the database
-    canvas.get("calendar_events", {
-
-        type: "assignment",
-        context_codes: courses_qs,
+    let courses, user, canvas_opts = {
         end_date: "2050-06-05T14:00:00.000Z",
         per_page: 1000
+    };
 
-    }).then(r => {
+    if (req.body.return_events) {
+
+        canvas_opts.type = "event";
+
+        try {
+            user = await canvas.get("users/self/profile");
+        } catch(e) {
+            return res.status(400).json({
+                success: false,
+                message: `Error getting Canvas user. Is the authorization token correct?`,
+                error: e
+            });
+        }
+
+        canvas_opts.context_codes = [ "user_" + user.id ];
+
+    } else {
+
+        canvas_opts.type = "assignment";
+
+        try {
+            courses = await canvas.get("courses");
+        } catch (e) {
+            return res.status(400).json({
+                success: false,
+                message: `Error getting Canvas courses. Is the authorization token correct?`,
+                error: e
+            });
+        }
+
+        canvas_opts.context_codes = courses.map(e => "course_" + e.id);
+
+    }
+
+    // Get calendar events and put then into the database
+    canvas.get("calendar_events", canvas_opts).then(r => {
 
         r.forEach(async (event) => {
 
-            let assn = event.assignment;
-            let good_description = htmlToText(assn.description);
+            let title, course, description, finalGrade, locked, due_start, due_end, url;
+            if ( req.body.return_events ) {
+
+                title = event.title;
+                due_start = event.start_at;
+                due_end = event.end_at;
+
+                description = htmlToText(event.description);
+                course = event.context_name;
+                url = event.html_url;
+                locked = false;
+
+                finalGrade = false;
+
+            } else {
+
+                let assn = event.assignment;
+
+                title = event.title;
+                description = htmlToText(assn.description);
+                course = event.context_name;
+
+                url = assn.html_url;
+                locked = assn.locked_for_user;
+
+                due_start = due_end = assn.due_at;
+                finalGrade = !assn.omit_from_final_grade;
+
+            }
 
             // Create a page under the database.
             await notion.pages.create({
@@ -163,7 +208,7 @@ router.post("/", async (req, res) => {
                         title: [
                             {
                                 text: {
-                                    content: assn.name
+                                    content: title
                                 }
                             }
                         ]
@@ -173,7 +218,7 @@ router.post("/", async (req, res) => {
                         rich_text: [
                             {
                                 text: {
-                                    content: event.context_name
+                                    content: course
                                 }
                             }
                         ]
@@ -184,7 +229,7 @@ router.post("/", async (req, res) => {
                             {
                                 text: {
                                     // Limit to 100 chars
-                                    content: (good_description.length < 100) ? good_description : (good_description.substring(0, 97) + "...")
+                                    content: (description.length < 100) ? description : (description.substring(0, 97) + "...")
                                 }
                             }
                         ]
@@ -197,22 +242,22 @@ router.post("/", async (req, res) => {
                     // },
 
                     IncludedInFinalGrade: {
-                        checkbox: !assn.omit_from_final_grade
+                        checkbox: finalGrade
                     },
 
                     Locked: {
-                        checkbox: assn.locked_for_user
+                        checkbox: locked
                     },
 
                     Due: {
                         date: {
-                            start: assn.due_at,
-                            end: assn.due_at
+                            start: due_start,
+                            end: due_end
                         }
                     },
 
                     URL: {
-                        url: assn.html_url
+                        url: url
                     }
 
                 }
