@@ -17,17 +17,7 @@ app.use(express.json());
 CORS_ORIGIN_WHITELIST = ["https://c2n.srg.id.au", "https://edutools.c2n.srg.id.au", "http://vcap.me"]
 
 app.use(require('cors')({
-    origin: (o, c) => {
-
-        // Remove !o to disallow server-to-server requests.
-        if (CORS_ORIGIN_WHITELIST.includes(o) || !o) {
-            return c(null, true);
-        } else {
-            console.warn("Request was made to server from origin " + o + " which has been blocked by CORS.")
-            return c('Cross origin request from origin ' + o + ' is denied.', false);
-        }
-
-    }
+    origin: "https://edutools.srg.id.au"
 }));
 
 app.all("/", (req, res) => res.redirect("https://c2n.srg.id.au"));
