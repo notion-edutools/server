@@ -30,7 +30,9 @@ app.use(require('cors')({
     }
 }));
 
-app.all("/", (req, res) => res.redirect("https://c2n.srg.id.au"))
+app.all("/", (req, res) => res.redirect("https://c2n.srg.id.au"));
+
 app.use("/actions/assn2db", require('./actions/assignments_to_db'));
+app.use("/actions/calen2db", require('./actions/calendar_to_db'));
 
 app.listen(process.env.PORT || 8080)
