@@ -2,6 +2,7 @@
 require('dotenv').config();
 
 const express = require('express');
+const cors = require('cors');
 const app = express();
 
 const limiter = require('express-rate-limit')({
@@ -19,8 +20,7 @@ const corsOptions = {
 };
 
 console.log(corsOptions);
-
-app.use(require('cors')(corsOptions));
+app.use(cors(corsOptions));
 
 app.all("/", (req, res) => res.redirect("https://edutools.srg.id.au"));
 
