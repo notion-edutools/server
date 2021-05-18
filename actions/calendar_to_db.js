@@ -183,13 +183,14 @@ router.post("/", async (req, res) => {
                 let assn = event.assignment;
 
                 title = event.title;
-                description = htmlToText(assn.description);
-                course = event.context_name;
+                description = htmlToText(event.description);
+                course = courses.filter(c => (c.id === assn.course_id))[0].name;
 
                 url = assn.html_url;
                 locked = assn.locked_for_user;
 
-                due_start = due_end = assn.due_at;
+                due_start = assn.due_at;
+                due_end = null;
                 finalGrade = !assn.omit_from_final_grade;
 
             }
