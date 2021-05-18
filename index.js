@@ -14,11 +14,13 @@ app.set('trust proxy', 1);
 app.use(limiter);
 app.use(express.json());
 
-CORS_ORIGIN_WHITELIST = ["https://c2n.srg.id.au", "https://edutools.c2n.srg.id.au", "http://vcap.me"]
-
-app.use(require('cors')({
+const corsOptions = {
     origin: "https://edutools.srg.id.au"
-}));
+};
+
+console.log(corsOptions);
+
+app.use(require('cors')(corsOptions));
 
 app.all("/", (req, res) => res.redirect("https://edutools.srg.id.au"));
 
