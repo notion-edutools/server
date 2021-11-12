@@ -130,16 +130,15 @@ router.post("/", async (req, res) => {
     	});
     }
 
+    const assignments = await canvas.get('courses/' + req.body.cid + "/assignments");
+    let errors = [];
 
+    for (let assn of assignments) {
 
-    // Get the assignments for the course
-    canvas.get('courses/' + req.body.cid + "/assignments").then(async (r) => {
+        // Make a description with no HTML
+        good_description = htmlToText(assn.description);
 
-        // For each assignment...
-        r.forEach(async (assn) => {
-
-            // Make a description with no HTML
-            good_description = htmlToText(assn.description);
+        try {
 
             // Create a page under the database.
             await notion.pages.create({
@@ -183,10 +182,9 @@ router.post("/", async (req, res) => {
                     },
 
                     // Not sure how to get this from the API, for now just get the user to change it.
-                    
-                    // Done: {
-                    //     checkbox: assn.has_submitted_submissions || false
-                    // },
+                    Done: {
+                        checkbox: assn.has_submitted_submissions || false
+                    },
 
                     IncludedInFinalGrade: {
                         checkbox: !assn.omit_from_final_grade
@@ -196,12 +194,12 @@ router.post("/", async (req, res) => {
                         checkbox: assn.locked_for_user
                     },
 
-                    Due: {
+                    ...(assn.due_at ? {Due: {
                         date: {
                             start: assn.due_at,
                             end: assn.due_at
                         }
-                    },
+                    }} : {}),
 
                     URL: {
                         url: assn.html_url
@@ -209,28 +207,52 @@ router.post("/", async (req, res) => {
 
                 }
 
-            }).catch(e => res.status(500).json({
+            });
+
+        } catch (e) {
+
+            console.error("Error on", assn.name)
+            errors.push(assn);
+
+        }
+
+
+    }
+
+    if (assignments.length > 0 && errors.length > 0) {
+
+        if (errors.length == assignments.length) {
+            return res.status(500).json({
                 success: false,
-                message: "Unknown error while creating Notion table.",
-                error: e
-            }));
+                message: "All of the assignments that were fetched failed to be inserted."
+            })
+        } else {
+            return res.json({
+                success: "partial",
+                message: "Some assignments failed to be inserted",
+                errored_on: errors
+            })
+        }
 
-        });
+    }
 
-    }).then(() => {
-        return res.json({
-            success: true,
-            message: "Completed insertion."
-        });
-    }).catch(e => {
-        res.status(500).json({
-            success: false,
-            message: "Unknown error while fetching Canvas data. Check your access token.",
-            error: e
-        });
-
-        throw e;
+    return res.json({
+        success: true,
+        message: "Completed insertion.",
+        errored_on: []
     });
+
+    // .then(() => {
+    //     
+    // }).catch(e => {
+    //     res.status(500).json({
+    //         success: false,
+    //         message: "Unknown error while fetching Canvas data. Check your access token.",
+    //         error: e
+    //     });
+
+    //     throw e;
+    // });
 
 })
 
